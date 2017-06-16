@@ -26,7 +26,12 @@ class Threader(object):
             Whether to include a thread count at the end of each tweet. E.g.,
             "4/" or "5x".
         """
-        # Checks and assign params
+        # Check twitter API
+        if not isinstance(api, TwitterAPI):
+            raise ValueError('api must be an instance of TwitterAPI')
+        self.api = api
+
+        # Check tweet list
         if not isinstance(tweets, list):
             raise ValueError('tweets must be a list')
         if not all(isinstance(it, str) for it in tweets):
@@ -36,16 +41,16 @@ class Threader(object):
         if not all(len(tweet) < 137 for tweet in tweets):
             raise ValueError("Not all tweets are less than 137 characters")
         self.tweets = tweets
+
+        # Check user existence
         if isinstance(user, str):
             self._check_user(user)
+
+        # Other params
         self.user = user
         self.time = time
         self.sent = False
         self.end_string = end_string
-
-        if not isinstance(api, TwitterAPI):
-            raise ValueError('api must be an instance of TwitterAPI')
-        self.api = api
 
     def _check_user(self, user):
         if user is not None:
