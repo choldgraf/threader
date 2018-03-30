@@ -3,7 +3,7 @@ from tqdm import tqdm
 from time import sleep
 
 class Threader(object):
-    def __init__(self, tweets, api, user=None, time=None, max_char=280, end_string=True):
+    def __init__(self, tweets, api, user=None, wait=None, max_char=280, end_string=True):
         """Create a thread of tweets.
 
         Note that you will need your Twitter API / Application keys for
@@ -18,7 +18,7 @@ class Threader(object):
         user : string | None
             A user to include in the tweets. If None, no user will be
             included.
-        time : float | None
+        wait : float | None
             The amount of time to wait between tweets. If None, they will
             be sent out as soon as possible.
         max_char : int
@@ -41,10 +41,10 @@ class Threader(object):
             raise ValueError('all items in `tweets` must be a string')
         if len(tweets) < 2:
             raise ValueError('you must pass two or more tweets')
-        
+
         # Other params
         self.user = user
-        self.time = time
+        self.wait = wait
         self.sent = False
         self.end_string = end_string
         self.max_char = max_char
@@ -83,7 +83,7 @@ class Threader(object):
             else:
                 this_status = tweet
             self.tweets.append(this_status)
-            
+
         if not all(len(tweet) < int(self.max_char) for tweet in self.tweets):
             raise ValueError("Not all tweets are less than {} characters".format(int(self.max_char)))
 
@@ -110,8 +110,8 @@ class Threader(object):
             self.responses_.append(resp)
             self.params_.append(params)
             self.tweet_ids_.append(resp.json()['id'])
-            if isinstance(self.time, (float, int)):
-                sleep(self.time)
+            if isinstance(self.wait, (float, int)):
+                sleep(self.wait)
         self.sent = True
 
     def __repr__(self):

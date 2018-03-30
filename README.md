@@ -33,7 +33,7 @@ tweets = ["Chris is testing a nifty little tool he made...",
           "but he also likes python, and automating things",
           "sometimes with unnecessary complexity...",
           "so let's see if this works :-D"]
-th = Threader(tweets, api, time=2, user=username)
+th = Threader(tweets, api, wait=2, user=username)
 th.send_tweets()
 ```
 
