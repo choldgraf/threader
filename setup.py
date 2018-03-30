@@ -8,8 +8,9 @@
 import os
 import setuptools
 from numpy.distutils.core import setup
+from threader import __version__
 
-version = "0.1"
+version = __version__
 
 descr = """Tools to quickly create twitter threads."""
 

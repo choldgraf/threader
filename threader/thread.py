@@ -1,6 +1,5 @@
 from TwitterAPI import TwitterAPI
 from tqdm import tqdm
-import numpy as np
 from time import sleep
 
 class Threader(object):
