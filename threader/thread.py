@@ -4,7 +4,7 @@ import numpy as np
 from time import sleep
 
 class Threader(object):
-    def __init__(self, tweets, api, user=None, time=None, end_string=True):
+    def __init__(self, tweets, api, user=None, time=None, max_char=280, end_string=True):
         """Create a thread of tweets.
 
         Note that you will need your Twitter API / Application keys for
@@ -22,6 +22,10 @@ class Threader(object):
         time : float | None
             The amount of time to wait between tweets. If None, they will
             be sent out as soon as possible.
+        max_char : int
+            The maximum number of characters allowed per tweet. Threader will
+            check each string in `tweets` before posting anything, and raise an
+            error if any string has more characters than max_char.
         end_string : bool
             Whether to include a thread count at the end of each tweet. E.g.,
             "4/" or "5x".
@@ -38,19 +42,20 @@ class Threader(object):
             raise ValueError('all items in `tweets` must be a string')
         if len(tweets) < 2:
             raise ValueError('you must pass two or more tweets')
-        if not all(len(tweet) < 137 for tweet in tweets):
-            raise ValueError("Not all tweets are less than 137 characters")
-        self.tweets = tweets
-
-        # Check user existence
-        if isinstance(user, str):
-            self._check_user(user)
-
+        
         # Other params
         self.user = user
         self.time = time
         self.sent = False
         self.end_string = end_string
+        self.max_char = max_char
+
+        # Construct our tweets
+        self.generate_tweets(tweets)
+
+        # Check user existence
+        if isinstance(user, str):
+            self._check_user(user)
 
     def _check_user(self, user):
         if user is not None:
@@ -63,6 +68,26 @@ class Threader(object):
             if err is not None:
                 raise ValueError('Error in finding username: {}\nError: {}'.format(user, err[0]))
 
+    def generate_tweets(self, tweets):
+        # Set up user ID to which we'll tweet
+        user = '@{} '.format(self.user) if isinstance(self.user, str) else ''
+
+        # Add end threading strings if specified
+        self._tweets_orig = tweets
+        self.tweets = []
+        for ii, tweet in enumerate(tweets):
+            this_status = '{}{}'.format(user, tweet)
+            if self.end_string is True:
+                thread_char = '/' if (ii+1) != len(tweets) else 'x'
+                end_str = '{}{}'.format(ii + 1, thread_char)
+                this_status += ' {}'.format(end_str)
+            else:
+                this_status = tweet
+            self.tweets.append(this_status)
+            
+        if not all(len(tweet) < int(self.max_char) for tweet in self.tweets):
+            raise ValueError("Not all tweets are less than {} characters".format(int(self.max_char)))
+
     def send_tweets(self):
         """Send the queued tweets to twitter."""
         if self.sent is True:
@@ -71,21 +96,10 @@ class Threader(object):
         self.responses_ = []
         self.params_ = []
 
-        # Set up user ID to which we'll tweet
-        user = '@{} '.format(self.user) if isinstance(self.user, str) else ''
-
         # Now generate the tweets
         for ii, tweet in tqdm(enumerate(self.tweets)):
-            this_status = '{}{}'.format(user, tweet)
-
-            # Create threading string
-            if self.end_string is True:
-                thread_char = '/' if tweet != self.tweets[-1] else 'x'
-                end_str = '{}{}'.format(ii + 1, thread_char)
-                this_status += ' {}'.format(end_str)
-
             # Create tweet and add metadata
-            params = {'status': this_status}
+            params = {'status': tweet}
             if len(self.tweet_ids_) > 0:
                 params['in_reply_to_status_id'] = self.tweet_ids_[-1]
 
@@ -103,8 +117,8 @@ class Threader(object):
 
     def __repr__(self):
         s = ['Threader']
-        s.append('Tweets: {}'.format(self.tweets))
-        if isinstance(self.user, str):
-            s.append('Username: {}')
+        s += ['Tweets', '------']
+        for tweet in self.tweets:
+            s += [tweet]
         s = '\n'.join(s)
         return s

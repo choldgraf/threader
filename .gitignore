@@ -102,3 +102,6 @@ ENV/
 
 # Mac
 .DS_Store
+
+# Sandbox
+sandbox.ipynb
