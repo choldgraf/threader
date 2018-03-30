@@ -2,16 +2,18 @@
 Easy Twitter threads with Python.
 
 ## Installation
-Currently the only way to install is by cloning this repository to your
-computer and then running either:
+
+You can install threader with `pip`:
+
+`pip install threader`
+
+Alternatively, clone this repository to your computer and then run either:
 
 `python setup.py install`
 
-or running
+or run
 
 `pip install -e path/to/cloned/folder`
-
-This will hopefully change in the future.
 
 ## Usage
 
@@ -33,7 +35,7 @@ tweets = ["Chris is testing a nifty little tool he made...",
           "but he also likes python, and automating things",
           "sometimes with unnecessary complexity...",
           "so let's see if this works :-D"]
-th = Threader(tweets, api, wait=2, user=username)
+th = Threader(tweets, api, wait=2)
 th.send_tweets()
 ```
 
